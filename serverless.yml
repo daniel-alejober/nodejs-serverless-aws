@@ -1,0 +1,53 @@
+service: api-nodejs-aws-v3
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:AWS_REGION}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [Users, Arn]
+            - Fn::GetAtt: [Comments, Arn]
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi: "*"
+        
+resources:
+  Resources:
+    Users:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: Users
+    Comments:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: commentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: commentId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: CommentsUsers
